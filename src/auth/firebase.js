@@ -5,7 +5,15 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
+import {
+  toastErrorNotify,
+  toastSuccessNotify,
+  toastWarnNotify,
+} from "../helpers/ToastNotify";
 
 
 //* Your web app's Firebase configuration
@@ -13,7 +21,7 @@ import {
 //* https://firebase.google.com/docs/auth/web/start
 //* https://console.firebase.google.com/ => project settings
 //! firebase console settings bölümünden firebaseconfig ayarlarını al
-console.log(process.env.REACT_APP_apiKey)
+
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_apiKey,
@@ -23,13 +31,15 @@ const firebaseConfig = {
   messagingSenderId: process.env.REACT_APP_messagingSenderId,
   appId: process.env.REACT_APP_appId,
 };
-
+console.log(firebaseConfig)
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
+console.log(auth)
 
-export const createUser = async (email, password, navigate) => {
+
+export const createUser = async (email, password, navigate,displayName) => {
   //? yeni bir kullanıcı oluşturmak için kullanılan firebase metodu
   try {
     let userCredential = await createUserWithEmailAndPassword(
@@ -37,30 +47,41 @@ export const createUser = async (email, password, navigate) => {
       email,
       password
     );
+
+         //? kullanıcı profilini güncellemek için kullanılan firebase metodu
+    await updateProfile(auth.currentUser, {
+      displayName: displayName,
+    });
     navigate("/");
-    console.log(userCredential);
+    toastSuccessNotify("Registered successfully!");
+    // console.log(userCredential);
   } catch (error) {
     console.log(error);
-    alert(error.message);
+    toastErrorNotify(error.message);
+    // alert(error.message);
   }
 };
 
 //* https://console.firebase.google.com/
 //* => Authentication => sign-in-method => enable Email/password
 //! Email/password ile girişi enable yap
+//!gerçek mail adresimi kontrol edecek.
 export const signIn = async (email, password, navigate) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     navigate("/");
+    toastSuccessNotify("Logged in successfully!");
   } catch (error) {
-    alert(error.message);
+    toastErrorNotify(error.message);
+    // alert(error.message);
   }
 };
-
-export const userObserver = () => {
+export const userObserver = (setCurrentUser) => {
   //? Kullanıcının signin olup olmadığını takip eden ve kullanıcı değiştiğinde yeni kullanıcıyı response olarak dönen firebase metodu
   onAuthStateChanged(auth, (user) => {
-    if (user) {
+    if (user) { 
+      const {email,displayName,photoURL} = user
+      setCurrentUser({email,displayName,photoURL})
       console.log(user);
     } else {
       console.log("user signed out");
@@ -70,4 +91,26 @@ export const userObserver = () => {
 
 export const logOut = () => {
   signOut(auth);
+};
+
+
+//* https://console.firebase.google.com/
+//* => Authentication => sign-in-method => enable Google
+//! Google ile girişi enable yap
+//* => Authentication => settings => Authorized domains => add domain
+//! Projeyi deploy ettikten sonra google sign-in çalışması için domain listesine deploy linkini ekle
+
+export const signUpWithGoogle = (navigate) => {
+  const provider = new GoogleAuthProvider();
+  //? Açılır pencere ile giriş yapılması için kullanılan firebase metodu
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      // console.log(result);
+      navigate("/");
+      toastSuccessNotify("Logged in successfully!");
+    })
+    .catch((error) => {
+      // Handle Errors here.
+      console.log(error);
+    });
 };

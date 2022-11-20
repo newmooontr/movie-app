@@ -1,16 +1,17 @@
-
-import './App.css';
-import AuthContextProvider from './context/AuthContext';
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import AuthContextProvider from "./context/AuthContextProvider";
 import AppRouter from "./router/AppRouter";
 
-function App() {
+const App = () => {
   return (
-    <AuthContextProvider>
-      <AppRouter/>
-
-    </AuthContextProvider>
-   
+    <div className="dark:bg-[#23242a]">
+      <AuthContextProvider>
+        <AppRouter />
+        <ToastContainer />
+      </AuthContextProvider>
+    </div>
   );
-}
+};
 
 export default App;
