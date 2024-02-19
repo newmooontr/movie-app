@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import MovieCard from "../components/MovieCard";
 import { AuthContext } from "../context/AuthContextProvider";
 import { toastWarnNotify } from "../helpers/ToastNotify";
-import MovieCard from "../components/MovieCard";
 
 const API_KEY = process.env.REACT_APP_TMDB_KEY;
 const FEATURED_API = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}`;
@@ -12,9 +12,10 @@ const Main = () => {
   const [movies, setMovies] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const {currentUser} = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
+    console.log('hereee')
     getMovies(FEATURED_API);
   }, []);
 
@@ -22,7 +23,10 @@ const Main = () => {
     setLoading(true);
     axios
       .get(API)
-      .then((res) => setMovies(res.data.results))
+      .then((res) => {
+        console.log(res.data.results)
+        setMovies(res.data.results)
+      })
       .catch((err) => console.log(err))
       .finally(() => setLoading(false));
   };
@@ -33,7 +37,7 @@ const Main = () => {
       getMovies(SEARCH_API + searchTerm);
       setSearchTerm("");
     } else if (!currentUser) {
-      toastWarnNotify("Please log in to search a movie");
+      toastWarnNotify("Please login to search a movie");
       // alert("please log in to see details");
     } else {
       toastWarnNotify("Please enter a text");

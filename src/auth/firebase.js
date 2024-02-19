@@ -3,11 +3,13 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+ 
 } from "firebase/auth";
 import {
   toastErrorNotify,
@@ -80,10 +82,11 @@ export const userObserver = (setCurrentUser) => {
   //? Kullanıcının signin olup olmadığını takip eden ve kullanıcı değiştiğinde yeni kullanıcıyı response olarak dönen firebase metodu
   onAuthStateChanged(auth, (user) => {
     if (user) { 
-      const {email,displayName,photoURL} = user
+      const {email,displayName,photoURL} = user;
       setCurrentUser({email,displayName,photoURL})
       console.log(user);
     } else {
+      setCurrentUser(false);
       console.log("user signed out");
     }
   });
@@ -112,5 +115,21 @@ export const signUpWithGoogle = (navigate) => {
     .catch((error) => {
       // Handle Errors here.
       console.log(error);
+    });
+};
+
+
+export const forgotPassword = (email) => {
+  //? Email yoluyla şifre sıfırlama için kullanılan firebase metodu
+  sendPasswordResetEmail(auth, email)
+    .then(() => {
+      // Password reset email sent!
+      toastWarnNotify("Please check your mail box!");
+      // alert("Please check your mail box!");
+    })
+    .catch((err) => {
+      toastErrorNotify(err.message);
+      // alert(err.message);
+      // ..
     });
 };
